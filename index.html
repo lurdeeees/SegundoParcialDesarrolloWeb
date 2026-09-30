@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111321">
+<title>Mi Blog · Estudio editorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><span>MB</span></span>
+        <div>
+          <p class="eyebrow">ESTUDIO EDITORIAL · 2026</p>
+          <h1>Mi <em>Blog</em></h1>
+          <p class="brand-copy">Historias que merecen quedarse.</p>
+        </div>
+      </div>
+
+      <div class="topbar-note" aria-hidden="true">
+        <span>ESCRIBE</span><i></i><span>EDITA</span><i></i><span>PUBLICA</span>
+      </div>
+
+      <div class="conn-wrap">
+        <div class="conn-heading">
+          <span class="live-dot"></span>
+          <span>Conexión del estudio</span>
+        </div>
+        <div class="conn">
+          <label for="apiBase">API</label>
+          <input id="apiBase" type="text" value="http://localhost:3000/api" spellcheck="false">
+          <button id="btnPing" class="btn btn-ghost btn-sm" type="button"><span aria-hidden="true">⌁</span> Comprobar</button>
+          <span id="pingBadge" class="badge badge-idle">sin comprobar</span>
+        </div>
+      </div>
+    </header>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <main class="layout">
+      <!-- ===== FORMULARIO ===== -->
+      <section class="panel form-panel">
+        <div class="section-kicker"><span>01</span> Mesa de escritura</div>
+        <div class="form-intro">
+          <div>
+            <h2>Crea algo<br><em>inolvidable.</em></h2>
+            <p>Convierte una idea en una publicación lista para compartir.</p>
+          </div>
+          <span class="scribble" aria-hidden="true">✦</span>
+        </div>
+
+        <form id="articuloForm" novalidate>
+          <div class="form-grid">
+            <label class="field field-title">
+              <span><b>01.</b> Título</span>
+              <input id="titulo" type="text" placeholder="Escribe un título que atrape…" required minlength="5">
+              <small class="hint" id="tituloHint"></small>
+            </label>
+
+            <label class="field field-content">
+              <span><b>02.</b> Contenido</span>
+              <textarea id="contenido" rows="8" placeholder="Todo gran artículo comienza con una primera línea…" required></textarea>
+              <small class="hint" id="contenidoHint"></small>
+            </label>
+
+            <label class="field field-upload">
+              <span><b>03.</b> Imagen de portada <small>PNG · JPG · JPEG · GIF</small></span>
+              <span class="upload-box">
+                <span class="upload-icon" aria-hidden="true">↥</span>
+                <span class="upload-copy"><strong>Elige una imagen</strong><small>o arrástrala desde tu equipo</small></span>
+                <input id="imagen" type="file" accept=".png,.jpg,.jpeg,.gif">
+              </span>
+            </label>
+          </div>
+
+          <div id="previewWrap" class="preview-wrap" hidden>
+            <div class="preview-frame"><img id="preview" alt="Vista previa"></div>
+            <span id="previewName"></span>
+            <button type="button" id="btnQuitarImagen" class="btn btn-ghost btn-sm">× Quitar</button>
+          </div>
+
+          <label class="field field-id">
+            <span><b>04.</b> ID del artículo <small>Se completa al publicar. También puedes pegar el ID de otro artículo para subirle una imagen.</small></span>
+            <div class="id-input-wrap">
+              <span aria-hidden="true">#</span>
+              <input id="articuloId" type="text" placeholder="671f2a…">
+            </div>
+          </label>
+
+          <div class="actions">
+            <button type="submit" id="btnPublicar" class="btn btn-primary"><span>Publicar artículo</span><b aria-hidden="true">↗</b></button>
+            <button type="button" id="btnSubirImagen" class="btn btn-secondary"><span aria-hidden="true">▧</span> Subir imagen</button>
+            <button type="button" id="btnLimpiar" class="btn btn-ghost"><span aria-hidden="true">↺</span> Limpiar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ===== REGISTRO DE PETICIONES ===== -->
+      <section class="panel log-panel">
+        <div class="panel-head">
+          <div>
+            <div class="section-kicker section-kicker-light"><span>02</span> Monitor HTTP</div>
+            <h2>Registro en vivo</h2>
+          </div>
+          <button id="btnClearLog" class="btn btn-ghost btn-sm" type="button"><span aria-hidden="true">⌫</span> Vaciar</button>
+        </div>
+        <p class="log-caption">Cada conversación entre tu frontend y la API, sin secretos.</p>
+        <p class="log-legend">
+          <span><i class="dot dot-ok"></i>2xx correcto</span>
+          <span><i class="dot dot-client"></i>4xx cliente</span>
+          <span><i class="dot dot-server"></i>5xx servidor</span>
+          <span><i class="dot dot-net"></i>sin conexión</span>
+        </p>
+        <div class="terminal-bar" aria-hidden="true">
+          <span></span><span></span><span></span>
+          <small>request_monitor.log</small>
+        </div>
+        <div id="log" class="log">
+          <p class="log-empty">Aún no se ha hecho ninguna petición.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== LISTADO DE ARTÍCULOS ===== -->
+    <section class="panel list-panel">
+      <div class="list-heading">
+        <div>
+          <div class="section-kicker"><span>03</span> Archivo editorial</div>
+          <h2>Historias <em>publicadas</em></h2>
+          <p>Tu colección de ideas, momentos y palabras.</p>
+        </div>
+        <button id="btnRefresh" class="btn btn-outline" type="button"><span aria-hidden="true">↻</span> Actualizar colección</button>
+      </div>
+      <div class="rule"><span>ÚLTIMAS PUBLICACIONES</span></div>
+      <div id="lista" class="lista">
+        <p class="log-empty">Cargando artículos...</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>MI BLOG</span>
+      <p>Un pequeño estudio para grandes historias.</p>
+      <span>API · NODE · MONGO</span>
+    </footer>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Referencias ----------
+  const $ = (id) => document.getElementById(id);
+
+  const apiBaseInput   = $("apiBase");
+  const btnPing        = $("btnPing");
+  const pingBadge      = $("pingBadge");
+  const banner         = $("banner");
+
+  const form            = $("articuloForm");
+  const tituloInput     = $("titulo");
+  const contenidoInput  = $("contenido");
+  const imagenInput     = $("imagen");
+  const previewWrap     = $("previewWrap");
+  const preview         = $("preview");
+  const previewName     = $("previewName");
+  const btnQuitarImagen = $("btnQuitarImagen");
+  const articuloIdInput = $("articuloId");
+
+  const btnSubirImagen = $("btnSubirImagen");
+  const btnPublicar    = $("btnPublicar");
+  const btnLimpiar     = $("btnLimpiar");
+
+  const logEl      = $("log");
+  const btnClearLog = $("btnClearLog");
+
+  const listaEl    = $("lista");
+  const btnRefresh = $("btnRefresh");
+
+  // ---------- Utilidades ----------
+  function nowStamp() {
+    const d = new Date();
+    return d.toLocaleTimeString("es-GT", { hour12: false });
+  }
+
+  function getApiBase() {
+    return apiBaseInput.value.trim().replace(/\/+$/, "");
+  }
+
+  function getServerRoot() {
+    const base = getApiBase();
+    return base.replace(/\/api$/, "") || base;
+  }
+
+  function statusClass(status, networkError) {
+    if (networkError || !status) return "net";
+    if (status >= 200 && status < 300) return "ok";
+    if (status >= 400 && status < 500) return "client";
+    if (status >= 500) return "server";
+    return "net";
+  }
+
+  function statusLabel(status, networkError) {
+    if (networkError) return "SIN CONEXIÓN";
+    if (!status) return "—";
+    return String(status);
+  }
+
+  function extractMessage(data) {
+    if (data == null) return "(sin cuerpo de respuesta)";
+    if (typeof data === "string") return data.slice(0, 300);
+    if (typeof data === "object") {
+      return data.mensaje || data.status || JSON.stringify(data).slice(0, 300);
+    }
+    return String(data);
+  }
+
+  function showBanner(type, message) {
+    banner.hidden = false;
+    banner.className = "banner banner-" + type;
+    banner.textContent = message;
+  }
+
+  function hideBanner() {
+    banner.hidden = true;
+  }
+
+  // ---------- Registro de peticiones ----------
+  function logEntry(entry) {
+    const empty = logEl.querySelector(".log-empty");
+    if (empty) empty.remove();
+
+    const cls = statusClass(entry.status, entry.networkError);
+    const label = statusLabel(entry.status, entry.networkError);
+
+    const row = document.createElement("div");
+    row.className = "log-row log-" + cls;
+
+    const message = entry.networkError
+      ? ("No se pudo conectar con el servidor: " + (entry.message || "error de red"))
+      : extractMessage(entry.data);
+
+    row.innerHTML =
+      '<div class="log-status">' + label + '</div>' +
+      '<div class="log-body">' +
+        '<div class="log-line"><strong>' + entry.method + '</strong> <span class="log-url">' + entry.url + '</span> <span class="log-time">' + entry.time + '</span></div>' +
+        '<div class="log-message"></div>' +
+        (entry.data != null ? '<details><summary>Ver respuesta completa</summary><pre></pre></details>' : "") +
+      '</div>';
+
+    row.querySelector(".log-message").textContent = message;
+    const pre = row.querySelector("pre");
+    if (pre) {
+      pre.textContent = typeof entry.data === "string" ? entry.data : JSON.stringify(entry.data, null, 2);
+    }
+
+    logEl.prepend(row);
+  }
+
+  btnClearLog.addEventListener("click", function () {
+    logEl.innerHTML = '<p class="log-empty">Aún no se ha hecho ninguna petición.</p>';
+  });
+
+  // ---------- Petición central a la API ----------
+  // Captura TODOS los casos: éxito (2xx), errores del cliente/servidor (4xx/5xx)
+  // y errores de red (servidor apagado, URL incorrecta, CORS, etc).
+  async function apiRequest(method, path, opts) {
+    opts = opts || {};
+    const base = getApiBase();
+    const url = base + path;
+    const time = nowStamp();
+
+    let fetchOpts = { method: method };
+
+    if (opts.isFormData) {
+      fetchOpts.body = opts.body;
+    } else if (opts.body !== undefined) {
+      fetchOpts.headers = { "Content-Type": "application/json" };
+      fetchOpts.body = JSON.stringify(opts.body);
+    }
+
+    try {
+      const res = await fetch(url, fetchOpts);
+      const text = await res.text();
+      let data = null;
+
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseErr) {
+          data = text; // el servidor no respondió JSON válido
+        }
+      }
+
+      logEntry({ method, url, time, status: res.status, statusText: res.statusText, ok: res.ok, data });
+      return { ok: res.ok, status: res.status, data, networkError: false };
+
+    } catch (err) {
+      // El fetch falló por completo: servidor apagado, URL mal escrita, sin CORS, sin internet, etc.
+      logEntry({ method, url, time, networkError: true, message: err.message });
+      return { ok: false, status: null, data: null, networkError: true, message: err.message };
+    }
+  }
+
+  // ---------- Comprobar servidor ----------
+  // Apunta a la raíz del servidor (no a /api), por eso se hace la petición directo con fetch.
+  btnPing.addEventListener("click", async function () {
+    pingBadge.textContent = "comprobando...";
+    pingBadge.className = "badge badge-idle";
+
+    const root = getServerRoot();
+    const time = nowStamp();
+    try {
+      const res = await fetch(root + "/", { method: "GET" });
+      const text = await res.text();
+      logEntry({ method: "GET", url: root + "/", time, status: res.status, statusText: res.statusText, ok: res.ok, data: text });
+
+      if (res.ok) {
+        pingBadge.textContent = "servidor activo (" + res.status + ")";
+        pingBadge.className = "badge badge-ok";
+      } else {
+        pingBadge.textContent = "respondió con " + res.status;
+        pingBadge.className = "badge badge-warn";
+      }
+    } catch (err) {
+      logEntry({ method: "GET", url: root + "/", time, networkError: true, message: err.message });
+      pingBadge.textContent = "sin conexión";
+      pingBadge.className = "badge badge-error";
+    }
+  });
+
+  // ---------- Vista previa de imagen ----------
+  imagenInput.addEventListener("change", function () {
+    const file = imagenInput.files[0];
+    if (!file) {
+      previewWrap.hidden = true;
+      return;
+    }
+    preview.src = URL.createObjectURL(file);
+    previewName.textContent = file.name + " (" + Math.round(file.size / 1024) + " KB)";
+    previewWrap.hidden = false;
+  });
+
+  btnQuitarImagen.addEventListener("click", function () {
+    imagenInput.value = "";
+    previewWrap.hidden = true;
+  });
+
+  // ---------- Validación de campos (refleja al backend: título >= 5, contenido no vacío) ----------
+  function validarFormulario() {
+    let valido = true;
+    $("tituloHint").textContent = "";
+    $("contenidoHint").textContent = "";
+
+    if (tituloInput.value.trim().length < 5) {
+      $("tituloHint").textContent = "El título debe tener al menos 5 caracteres.";
+      tituloInput.classList.add("input-error");
+      valido = false;
+    } else {
+      tituloInput.classList.remove("input-error");
+    }
+
+    if (contenidoInput.value.trim().length === 0) {
+      $("contenidoHint").textContent = "El contenido no puede estar vacío.";
+      contenidoInput.classList.add("input-error");
+      valido = false;
+    } else {
+      contenidoInput.classList.remove("input-error");
+    }
+
+    return valido;
+  }
+
+  // ---------- Subir imagen (acción independiente) ----------
+  async function subirImagen(id) {
+    const file = imagenInput.files[0];
+
+    if (!id) {
+      showBanner("error", "Ingresa o genera primero el ID del artículo al que se subirá la imagen.");
+      return { ok: false };
+    }
+    if (!file) {
+      showBanner("error", "Selecciona una imagen antes de subir.");
+      return { ok: false };
+    }
+
+    const formData = new FormData();
+    formData.append("file0", file);
+
+    const result = await apiRequest("POST", "/subir-imagen/" + encodeURIComponent(id), { isFormData: true, body: formData });
+
+    if (result.networkError) {
+      showBanner("error", "No se pudo conectar con el servidor para subir la imagen. Revisa la URL de la API y que el backend esté corriendo.");
+    } else if (result.ok) {
+      showBanner("success", "Imagen subida correctamente (estado " + result.status + ").");
+    } else {
+      showBanner("error", "Error al subir la imagen (estado " + result.status + "): " + extractMessage(result.data));
+    }
+    return result;
+  }
+
+  btnSubirImagen.addEventListener("click", async function () {
+    hideBanner();
+    btnSubirImagen.disabled = true;
+    await subirImagen(articuloIdInput.value.trim());
+    btnSubirImagen.disabled = false;
+    fetchLista();
+  });
+
+  // ---------- Publicar (crear + subir imagen en un solo flujo) ----------
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    hideBanner();
+
+    if (!validarFormulario()) {
+      showBanner("error", "Revisa los campos marcados antes de publicar.");
+      return;
+    }
+
+    btnPublicar.disabled = true;
+    btnSubirImagen.disabled = true;
+    btnPublicar.textContent = "Publicando...";
+
+    try {
+      // 1) Crear el artículo
+      const crearResult = await apiRequest("POST", "/crear", {
+        body: { titulo: tituloInput.value.trim(), contenido: contenidoInput.value.trim() }
+      });
+
+      if (crearResult.networkError) {
+        showBanner("error", "No se pudo conectar con el servidor al crear el artículo.");
+        return;
+      }
+      if (!crearResult.ok) {
+        showBanner("error", "Error al crear el artículo (estado " + crearResult.status + "): " + extractMessage(crearResult.data));
+        return;
+      }
+
+      const articulo = crearResult.data && crearResult.data.articulo;
+      const nuevoId = articulo && (articulo._id || articulo.id);
+
+      if (nuevoId) {
+        articuloIdInput.value = nuevoId;
+      }
+
+      // 2) Si hay imagen seleccionada, subirla al artículo recién creado
+      if (imagenInput.files[0]) {
+        if (!nuevoId) {
+          showBanner("error", "El artículo se creó, pero no se recibió su ID: no se pudo subir la imagen.");
+          fetchLista();
+          return;
+        }
+        const subirResult = await subirImagen(nuevoId);
+        if (subirResult.ok) {
+          showBanner("success", "Artículo publicado y (estado " + crearResult.status + ") e imagen subida correctamente.");
+        }
+        // si falla la subida, subirImagen ya mostró el mensaje de error correspondiente
+      } else {
+        showBanner("success", "Artículo publicado correctamente (estado " + crearResult.status + ").");
+      }
+
+      form.reset();
+      previewWrap.hidden = true;
+      fetchLista();
+
+    } finally {
+      btnPublicar.disabled = false;
+      btnSubirImagen.disabled = false;
+      btnPublicar.textContent = "Publicar";
+    }
+  });
+
+  // ---------- Limpiar formulario ----------
+  btnLimpiar.addEventListener("click", function () {
+    form.reset();
+    previewWrap.hidden = true;
+    articuloIdInput.value = "";
+    tituloInput.classList.remove("input-error");
+    contenidoInput.classList.remove("input-error");
+    $("tituloHint").textContent = "";
+    $("contenidoHint").textContent = "";
+    hideBanner();
+  });
+
+  // ---------- Listado de artículos ----------
+  function formatearFecha(fecha) {
+    if (!fecha) return "";
+    const d = new Date(fecha);
+    if (isNaN(d)) return fecha;
+    return d.toLocaleDateString("es-GT", { year: "numeric", month: "short", day: "numeric" });
+  }
+
+  function tarjetaArticulo(articulo) {
+    const id = articulo._id || articulo.id || "";
+    const root = getServerRoot();
+    const imgSrc = articulo.imgUrl ? (root + "/imagenes/articulos/" + articulo.imgUrl) : "";
+
+    const card = document.createElement("article");
+    card.className = "card";
+
+    card.innerHTML =
+      '<div class="card-img">' +
+        (imgSrc ? '<img src="' + imgSrc + '" alt="" onerror="this.closest(\'.card-img\').classList.add(\'card-img-empty\'); this.remove();">' : '') +
+        '<span class="card-img-fallback">🖼️<br>sin imagen aún</span>' +
+      '</div>' +
+      '<div class="card-body">' +
+        '<h3></h3>' +
+        '<p class="card-date"></p>' +
+        '<p class="card-excerpt"></p>' +
+        '<p class="card-id">ID: <code></code></p>' +
+        '<div class="card-actions">' +
+          '<button type="button" class="btn btn-ghost btn-sm act-usar">📌 Usar este ID</button>' +
+          '<button type="button" class="btn btn-danger btn-sm act-borrar">🗑️ Eliminar</button>' +
+        '</div>' +
+      '</div>';
+
+    card.querySelector("h3").textContent = articulo.titulo || "(sin título)";
+    card.querySelector(".card-date").textContent = formatearFecha(articulo.fecha);
+    card.querySelector(".card-excerpt").textContent = (articulo.contenido || "").slice(0, 140) + ((articulo.contenido || "").length > 140 ? "…" : "");
+    card.querySelector(".card-id code").textContent = id;
+
+    card.querySelector(".act-usar").addEventListener("click", function () {
+      articuloIdInput.value = id;
+      showBanner("success", "ID copiado al formulario. Ya puedes subirle una imagen.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    card.querySelector(".act-borrar").addEventListener("click", async function () {
+      if (!confirm("¿Eliminar este artículo? Esta acción no se puede deshacer.")) return;
+      const result = await apiRequest("DELETE", "/borrar/" + encodeURIComponent(id));
+      if (result.networkError) {
+        showBanner("error", "No se pudo conectar con el servidor para eliminar el artículo.");
+      } else if (result.ok) {
+        showBanner("success", "Artículo eliminado (estado " + result.status + ").");
+        fetchLista();
+      } else {
+        showBanner("error", "Error al eliminar (estado " + result.status + "): " + extractMessage(result.data));
+      }
+    });
+
+    return card;
+  }
+
+  async function fetchLista() {
+    listaEl.innerHTML = '<p class="log-empty">Cargando artículos...</p>';
+
+    const result = await apiRequest("GET", "/listar");
+
+    if (result.networkError) {
+      listaEl.innerHTML = '<p class="log-empty log-empty-error">No se pudo cargar la lista: el servidor no respondió.</p>';
+      return;
+    }
+
+    if (!result.ok) {
+      listaEl.innerHTML = '<p class="log-empty">' + extractMessage(result.data) + '</p>';
+      return;
+    }
+
+    const consulta = (result.data && result.data.consulta) || [];
+    if (consulta.length === 0) {
+      listaEl.innerHTML = '<p class="log-empty">Todavía no hay artículos publicados.</p>';
+      return;
+    }
+
+    listaEl.innerHTML = "";
+    consulta.forEach(function (articulo) {
+      listaEl.appendChild(tarjetaArticulo(articulo));
+    });
+  }
+
+  btnRefresh.addEventListener("click", fetchLista);
+
+  // ---------- Arranque ----------
+  fetchLista();
+
+})();
+</script>
+</body>
+</html>
